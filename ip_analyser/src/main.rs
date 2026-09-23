@@ -1,75 +1,26 @@
-use std::env;
+use clap::Parser;
 use std::io::{self, Write};
 use std::net::{IpAddr, TcpStream};
-use std::process;
-use std::str::FromStr;
 use std::sync::mpsc::{Sender, channel};
 use std::thread;
 
+/// A Simple port scanner
+#[derive(Parser)]
 struct Arguments {
-    flag: String,
-    ipaddr: IpAddr,
+    /// IP address to scan
+    #[arg(short = 'a', long = "addr")]
+    ip_addr: IpAddr,
+
+    /// Number of threads to use
+    #[arg(short, long, default_value_t = 4, value_parser = clap::value_parser!(u16).range(1..))]
     threads: u16,
 }
 
-impl Arguments {
-    fn new(args: &[String]) -> Result<Arguments, &'static str> {
-        if args.len() < 2 {
-            return Err("Not enough arguments");
-        } else if args.len() > 4 {
-            return Err("Too many arguments");
-        }
-
-        let flag = args[1].clone();
-
-        if let Ok(ipaddr) = IpAddr::from_str(&flag) {
-            return Ok(Arguments {flag: String::from(""), ipaddr, threads: 4})
-        } else {
-
-            if (flag.contains("-h") || flag.contains("-help")) && args.len() == 2 {
-                println!("Usage: -j to select how many threads to use\
-                \r\n -h or -help to show this help message");
-
-                return Err("help");
-            } else if flag.contains("-h") || flag.contains("-help") {
-                return Err("Too many arguments");
-            } else if flag.contains("-j") && args.len() == 4 {
-                let ipaddr = match IpAddr::from_str(&args[3]) {
-                    Ok(ipaddr) => ipaddr,
-                    Err(_) => return Err("Invalid IP address")
-                };
-
-                let threads = match args[2].parse::<u16>() {
-                    Ok(threads) => threads,
-                    Err(_) => return Err("Failed to parse number of threads")
-                };
-
-                return Ok(Arguments {flag, ipaddr, threads});
-            } else {
-                return Err("Invalid syntax");
-            }
-        }
-    }
-}
-
-
-
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
-    let arguments = Arguments::new(&args).unwrap_or_else(
-        |err| {
-            if err.contains("help") {
-                process::exit(0);
-            } else {
-                eprintln!("{} problem parsing arguments: {}", program, err);
-                process::exit(0);
-            }
-        }
-    );
+    let args = Arguments::parse();
 
-    let num_threads = arguments.threads;
-    let addr = arguments.ipaddr;
+    let num_threads = args.threads;
+    let ip_addr = args.ip_addr;
 
     let (tx, rx) = channel();
 
@@ -77,7 +28,7 @@ fn main() {
         let tx = tx.clone();
 
         thread::spawn(move || {
-            scan(tx, i, addr, num_threads)
+            scan(tx, i, ip_addr, num_threads)
         });
     }
 
