@@ -1,0 +1,21 @@
+# Saída de compilação do Cargo (qualquer projeto)
+target/
+
+# Backups do rustfmt
+**/*.rs.bk
+
+# IDEs e editores
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Configuração do tutor (Claude Code) — não é necessária para rodar o código
+.claude/
+CLAUDE.md
