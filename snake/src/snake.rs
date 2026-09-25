@@ -132,7 +132,7 @@ impl Snake {
 
             ch += 1;
             if ch == self.body.len() - 1 {
-                break
+                break;
             }
         }
         false
