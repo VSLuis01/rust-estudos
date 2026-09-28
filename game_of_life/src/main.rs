@@ -1,11 +1,12 @@
 mod grid;
 mod screen;
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
 
 use crate::grid::Grid;
+use crate::screen::Timings;
 
 const TICK: Duration = Duration::from_millis(100);
 
@@ -16,9 +17,16 @@ fn main() {
 
     screen::setup();
 
+    let mut timings = Timings::default();
+
     loop {
-        screen::draw(&grid);
+        let start = Instant::now();
+        screen::draw(&grid, &timings);
+        timings.draw = start.elapsed();
+
+        let start = Instant::now();
         grid.next_gen();
+        timings.next_gen = start.elapsed();
 
         if esc_pressed() {
             break;

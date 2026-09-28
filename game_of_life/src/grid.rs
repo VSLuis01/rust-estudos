@@ -13,6 +13,8 @@ pub struct Grid {
     width: usize,
     height: usize,
     cells: Vec<bool>,
+    generation: u64,
+    population: usize,
 }
 
 impl Grid {
@@ -21,6 +23,8 @@ impl Grid {
             width,
             height,
             cells: vec![false; width * height],
+            generation: 0,
+            population: 0,
         }
     }
 
@@ -28,28 +32,56 @@ impl Grid {
         self.width
     }
 
+    pub fn height(&self) -> usize {
+        self.height
+    }
+
     pub fn cells(&self) -> &[bool] {
         &self.cells
     }
 
+    pub fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    pub fn population(&self) -> usize {
+        self.population
+    }
+
     pub fn randomize(&mut self) {
+        let mut population = 0;
+
         for cell in self.cells.iter_mut() {
             *cell = rand::random::<f32>() < CHANCE_TO_LIVE;
+            if *cell {
+                population += 1;
+            }
         }
+
+        self.population = population;
+        self.generation = 0;
     }
 
     pub fn next_gen(&mut self) {
         let mut next = vec![false; self.cells.len()];
+        let mut population = 0;
 
         for (index, alive) in self.cells.iter().enumerate() {
-            next[index] = match (alive, self.neighbors_alive(index)) {
+            let lives = match (alive, self.neighbors_alive(index)) {
                 (true, 2) | (true, 3) => true,
                 (false, 3) => true,
                 _ => false,
             };
+
+            next[index] = lives;
+            if lives {
+                population += 1;
+            }
         }
 
         self.cells = next;
+        self.population = population;
+        self.generation += 1;
     }
 
     fn neighbors_alive(&self, index: usize) -> u8 {
