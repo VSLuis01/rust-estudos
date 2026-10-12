@@ -1,5 +1,5 @@
 use std::io::{self, ErrorKind, Read, Write};
-use std::net::{IpAddr, TcpStream};
+use std::net::TcpStream;
 use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
 use std::thread;
 use std::time::Duration;

@@ -1,0 +1,3 @@
+[workspace]
+members = ["smoke_test", "prime_time", "tcp_server"]
+resolver = "3"
